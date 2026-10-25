@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f7f8fa">
+<title>XAUUSD Lot Size Calculator</title>
+<style>
+    :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #172033;
+        background: #f7f8fa;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        --muted: #778196;
+        --line: #e7eaf0;
+        --accent: #315fe8;
+        --accent-soft: #edf2ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 36px 16px;
+        display: grid;
+        place-items: center;
+    }
+
+    .calculator {
+        width: min(100%, 460px);
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 16px 45px rgba(26, 39, 71, .07);
+    }
+
+    .header { padding: 27px 28px 22px; }
+
+    .eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(22px, 5vw, 27px);
+        letter-spacing: -.04em;
+        line-height: 1.2;
+    }
+
+    .subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .account-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0 28px 20px;
+    }
+
+    .account-info span {
+        padding: 7px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: #59647a;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .account-info strong { color: #25304a; }
+
+    .content {
+        padding: 22px 28px 25px;
+        border-top: 1px solid var(--line);
+    }
+
+    .input-group { margin-bottom: 20px; }
+
+    .section-label, legend {
+        display: block;
+        margin-bottom: 8px;
+        color: #39445b;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        min-height: 51px;
+        border: 1px solid #dce1e9;
+        border-radius: 10px;
+        background: #fff;
+        transition: border-color .15s, box-shadow .15s;
+    }
+
+    .input-wrapper:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(49, 95, 232, .12);
+    }
+
+    .input-wrapper input {
+        width: 100%;
+        min-width: 0;
+        padding: 13px 14px;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #172033;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .input-wrapper input::placeholder { color: #a1a9b8; font-weight: 400; }
+
+    .input-suffix {
+        padding: 0 14px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        white-space: nowrap;
+    }
+
+    .hint {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    fieldset {
+        min-width: 0;
+        margin: 0 0 22px;
+        padding: 0;
+        border: 0;
+    }
+
+    legend { padding: 0; }
+
+    .risk-options {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .risk-option { position: relative; }
+
+    .risk-option input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+    }
+
+    .risk-option label {
+        display: grid;
+        min-height: 66px;
+        place-content: center;
+        gap: 5px;
+        padding: 8px 4px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: #fff;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color .15s, background .15s;
+    }
+
+    .risk-option label strong { font-size: 13px; }
+    .risk-option label span { color: var(--muted); font-size: 10px; }
+
+    .risk-option input:checked + label {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: #234bc5;
+    }
+
+    .risk-option input:focus-visible + label {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .results {
+        padding: 20px;
+        border-radius: 12px;
+        background: #f5f7fb;
+    }
+
+    .result-main {
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e2e6ee;
+        text-align: center;
+    }
+
+    .result-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .lot-size {
+        margin-top: 5px;
+        color: var(--accent);
+        font-size: 40px;
+        font-weight: 750;
+        letter-spacing: -.05em;
+        overflow-wrap: anywhere;
+    }
+
+    .lot-caption { color: var(--muted); font-size: 11px; }
+
+    .result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-top: 15px;
+        font-size: 12px;
+    }
+
+    .result-row span { color: #667188; }
+    .result-row strong { color: #202b42; font-size: 13px; text-align: right; }
+
+    .utilization-track {
+        height: 5px;
+        margin-top: 9px;
+        overflow: hidden;
+        border-radius: 9px;
+        background: #e1e6ef;
+    }
+
+    .utilization-bar {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--accent);
+        transition: width .25s ease, background-color .25s ease;
+    }
+
+    .error {
+        display: none;
+        margin: 12px 0 0;
+        color: #b42318;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .footer {
+        padding: 0 28px 22px;
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.6;
+        text-align: center;
+    }
+
+    @media (max-width: 380px) {
+        .header { padding: 23px 20px 18px; }
+        .account-info { padding: 0 20px 18px; gap: 6px; }
+        .content { padding: 20px; }
+        .footer { padding: 0 20px 20px; }
+        .risk-options { gap: 5px; }
+        .risk-option label span { font-size: 9px; }
+        .results { padding: 17px; }
+    }
+</style>
+</head>
+<body>
+<div class="calculator">
+    <header class="header">
+        <p class="eyebrow">Trading tool</p>
+        <h1>XAUUSD lot calculator</h1>
+        <p class="subtitle">Set your stop loss and risk to find your position size.</p>
+    </header>
+
+    <section class="account-info" aria-label="Account settings">
+        <span>Capital <strong>$15,000</strong></span>
+        <span>Leverage <strong>25×</strong></span>
+        <span>Asset <strong>XAUUSD</strong></span>
+    </section>
+
+    <main class="content">
+        <div class="input-group">
+            <label class="section-label" for="xauPrice">Current gold price</label>
+            <div class="input-wrapper">
+                <input type="number" id="xauPrice" min="0.01" step="0.01" value="4000" inputmode="decimal" aria-describedby="priceHint">
+                <span class="input-suffix">USD / OZ</span>
+            </div>
+            <p class="hint" id="priceHint">Used to estimate the margin required.</p>
+        </div>
+
+        <div class="input-group">
+            <label class="section-label" for="slPoints">Stop loss distance</label>
+            <div class="input-wrapper">
+                <input type="number" id="slPoints" min="1" step="1" value="500" inputmode="numeric" aria-describedby="slHint">
+                <span class="input-suffix">POINTS</span>
+            </div>
+            <p class="hint" id="slHint">1 point = $0.01 price movement.</p>
+        </div>
+
+        <fieldset>
+            <legend>Risk per trade</legend>
+            <div class="risk-options">
+                <div class="risk-option">
+                    <input type="radio" name="risk" id="risk100" value="1" checked>
+                    <label for="risk100"><strong>1.00%</strong><span>$150.00 risk</span></label>
+                </div>
+                <div class="risk-option">
+                    <input type="radio" name="risk" id="risk075" value="0.75">
+                    <label for="risk075"><strong>0.75%</strong><span>$112.50 risk</span></label>
+                </div>
+                <div class="risk-option">
+                    <input type="radio" name="risk" id="risk050" value="0.50">
+                    <label for="risk050"><strong>0.50%</strong><span>$75.00 risk</span></label>
+                </div>
+                <div class="risk-option">
+                    <input type="radio" name="risk" id="risk025" value="0.25">
+                    <label for="risk025"><strong>0.25%</strong><span>$37.50 risk</span></label>
+                </div>
+            </div>
+        </fieldset>
+
+        <section class="results" aria-live="polite" aria-label="Position size results">
+            <div class="result-main">
+                <div class="result-label">Recommended lot size</div>
+                <div class="lot-size" id="lotSize">0.30</div>
+                <div class="lot-caption">Standard lots</div>
+            </div>
+            <div class="result-row"><span>Risk amount</span><strong id="riskAmount">$150.00</strong></div>
+            <div class="result-row"><span>Margin required</span><strong id="marginRequired">$6,000.00</strong></div>
+            <div class="result-row"><span>Margin utilization</span><strong id="marginUtilization">40.00%</strong></div>
+            <div class="utilization-track" aria-hidden="true"><div class="utilization-bar" id="utilizationBar"></div></div>
+            <p class="error" id="errorMessage" role="alert">Enter a valid price and stop loss.</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        Standard lot = 100 oz of gold. Margin uses your entered price and 20× leverage.<br>
+        Broker contract specifications and execution may differ.
+    </footer>
+</div>
+
+<script>
+    const CAPITAL = 15000;
+    const LEVERAGE = 25;
+    const CONTRACT_SIZE = 100;
+    const POINT_VALUE_PER_LOT = 1; // 100 oz lot × $0.01 movement per point
+
+    const priceInput = document.getElementById("xauPrice");
+    const slInput = document.getElementById("slPoints");
+    const riskInputs = document.querySelectorAll('input[name="risk"]');
+    const lotOutput = document.getElementById("lotSize");
+    const riskOutput = document.getElementById("riskAmount");
+    const marginOutput = document.getElementById("marginRequired");
+    const utilizationOutput = document.getElementById("marginUtilization");
+    const utilizationBar = document.getElementById("utilizationBar");
+    const errorMessage = document.getElementById("errorMessage");
+
+    function money(value) {
+        return "$" + value.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function calculateLotSize() {
+        const slPoints = Number(slInput.value);
+        const xauPrice = Number(priceInput.value);
+        const selectedRisk = document.querySelector('input[name="risk"]:checked');
+        const valid = slInput.value.trim() !== "" && Number.isFinite(slPoints) && slPoints > 0 &&
+            priceInput.value.trim() !== "" && Number.isFinite(xauPrice) && xauPrice > 0 && selectedRisk;
+
+        if (!valid) {
+            lotOutput.textContent = "--";
+            riskOutput.textContent = "--";
+            marginOutput.textContent = "--";
+            utilizationOutput.textContent = "--";
+            utilizationBar.style.width = "0%";
+            utilizationBar.style.backgroundColor = "#315fe8";
+            errorMessage.style.display = "block";
+            return;
+        }
+
+        errorMessage.style.display = "none";
+        const riskAmount = CAPITAL * (Number(selectedRisk.value) / 100);
+        const lotSize = Math.floor((riskAmount / (slPoints * POINT_VALUE_PER_LOT)) * 100 + 1e-9) / 100;
+        const marginRequired = lotSize * CONTRACT_SIZE * xauPrice / LEVERAGE;
+        const marginUtilization = marginRequired / CAPITAL * 100;
+
+        lotOutput.textContent = lotSize.toFixed(2);
+        riskOutput.textContent = money(riskAmount);
+        marginOutput.textContent = money(marginRequired);
+        utilizationOutput.textContent = marginUtilization.toFixed(2) + "%";
+        utilizationBar.style.width = Math.min(marginUtilization, 100) + "%";
+        utilizationBar.style.backgroundColor = marginUtilization > 100 ? "#dc5448" : "#315fe8";
+    }
+
+    priceInput.addEventListener("input", calculateLotSize);
+    slInput.addEventListener("input", calculateLotSize);
+    riskInputs.forEach(input => input.addEventListener("change", calculateLotSize));
+    calculateLotSize();
+</script>
+</body>
+</html>
